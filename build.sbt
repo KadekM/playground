@@ -48,12 +48,6 @@ lazy val playAkka = Project(id = "playground-akka", base = file("modules/playgro
     scalaVersion := "2.11.8",
 
     libraryDependencies ++= Seq(
-  //    "com.github.krasserm" %% "streamz-converter" % "0.8-SNAPSHOT",
-
-      "org.tpolecat" %% "doobie-core-cats" % "0.4.1",
-      "org.tpolecat" %% "doobie-postgres-cats" % "0.4.1",
-
-
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
       "com.typesafe.akka" %% "akka-agent" % akkaVersion,
       "com.typesafe.akka" %% "akka-camel" % akkaVersion,
