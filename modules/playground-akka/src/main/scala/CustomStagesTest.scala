@@ -13,7 +13,7 @@ object CustomStagesTest extends App with ActorDeps {
   val xs = List(1,1,1,1,2,2,2,1,1,1,3,3,3,3,3)
   val src: Source[Int, NotUsed] = Source(xs)
 
-  src.via(new GroupedByWithin[Int, Int](20, x => x+1))
+  src.via(new GroupedByWithin[Int, Int](20, x => x))
     .runWith(Sink.foreach(println))
 
   shutdown()
@@ -45,18 +45,12 @@ class GroupedByWithin[T, K](maxSize: Int, f: T => K) extends GraphStage[FlowShap
     }
 
     private def nextElement(elem: T): Unit = {
-      if (elements == 0) key = f(elem) // if first element, set it as key
-
-      if (f(elem) != key) {
+      groupEmitted = false
+      buf += elem
+      elements += 1
+      if (elements >= maxSize) {
         closeGroup()
-      } else {
-        groupEmitted = false
-        buf += elem
-        elements += 1
-        if (elements >= maxSize) {
-          closeGroup()
-        } else pull(in)
-      }
+      } else pull(in)
     }
 
     private def closeGroup(): Unit = {
@@ -81,7 +75,14 @@ class GroupedByWithin[T, K](maxSize: Int, f: T => K) extends GraphStage[FlowShap
     }
 
     override def onPush(): Unit = {
-      if (!groupClosed) nextElement(grab(in)) // otherwise keep the element for next round
+      if (!groupClosed) {
+        val next = grab(in)
+        if (key == null) {
+          key = f(next)
+          println(key)
+        }
+        nextElement(next)
+      }
     }
 
     override def onPull(): Unit = if (groupClosed) emitGroup()
