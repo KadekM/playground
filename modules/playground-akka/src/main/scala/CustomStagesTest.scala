@@ -10,10 +10,14 @@ import scala.collection.parallel.immutable
 
 object CustomStagesTest extends App with ActorDeps {
 
-  val xs = List(1,1,1,1,2,2,2,1,1,1,3,3,3,3,3)
-  val src: Source[Int, NotUsed] = Source(xs)
+  val xs1 = List.empty[Int]
+  val xs2 = List(1)
+  val xs3 = List(1,1)
+  val xs4 = List(1,2)
+  val xs5 = List(1,1,1,1,2,2,2,1,1,1,3,3,3,3,3,3)
+  val src: Source[Int, NotUsed] = Source(xs5)
 
-  src.via(new GroupedByWithin[Int, Int](20, x => x))
+  src.via(new GroupedByWithin[Int, Int](2, x => x))
     .runWith(Sink.foreach(println))
 
   shutdown()
@@ -38,9 +42,9 @@ class GroupedByWithin[T, K](maxSize: Int, f: T => K) extends GraphStage[FlowShap
     private var groupEmitted = false
     private var finished = false
     private var elements = 0
+    private var residuary: Option[T] = None
 
-
-    override def preStart() = {
+    override def preStart(): Unit = {
       pull(in)
     }
 
@@ -58,9 +62,15 @@ class GroupedByWithin[T, K](maxSize: Int, f: T => K) extends GraphStage[FlowShap
       if (isAvailable(out)) emitGroup()
     }
 
+    private def tryAddCarryToBuf(): Unit = {
+      if (elements < maxSize)
+        residuary.foreach { x => buf += x; elements += 1; residuary = None }
+    }
+
     private def emitGroup(): Unit = {
       groupEmitted = true
       key = null.asInstanceOf[K]
+      tryAddCarryToBuf()
       push(out, buf.result())
       buf.clear()
       if (!finished) startNewGroup()
@@ -70,18 +80,28 @@ class GroupedByWithin[T, K](maxSize: Int, f: T => K) extends GraphStage[FlowShap
     private def startNewGroup(): Unit = {
       elements = 0
       groupClosed = false
-      if (isAvailable(in)) nextElement(grab(in))
+      if (isAvailable(in)) potNextEl()
       else if (!hasBeenPulled(in)) pull(in)
     }
 
+    private def potNextEl(): Unit = {
+      val next = grab(in)
+      if (key == null) {
+        key = f(next)
+      }
+
+      if (f(next) == key) {
+        nextElement(next)
+      } else {
+        closeGroup()
+        residuary = Some(next)
+      }
+    }
+
+
     override def onPush(): Unit = {
       if (!groupClosed) {
-        val next = grab(in)
-        if (key == null) {
-          key = f(next)
-          println(key)
-        }
-        nextElement(next)
+        potNextEl()
       }
     }
 
@@ -89,7 +109,14 @@ class GroupedByWithin[T, K](maxSize: Int, f: T => K) extends GraphStage[FlowShap
 
     override def onUpstreamFinish(): Unit = {
       finished = true
-      if (groupEmitted) completeStage()
+      if (groupEmitted) {
+        if (residuary.isDefined) {
+          tryAddCarryToBuf()
+          push(out, buf.result())
+        }
+
+        completeStage()
+      }
       else closeGroup()
     }
 
