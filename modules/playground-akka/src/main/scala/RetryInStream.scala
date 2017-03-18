@@ -7,6 +7,8 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 object RetryInStream extends App with ActorDeps {
 
+  implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
+
   println("--- start ---")
   def fail(i: Int): Future[Int] = {
     println(s"trying $i")

@@ -9,7 +9,6 @@ trait ActorDeps {
   val duration = 20.seconds
   implicit val system: ActorSystem = ActorSystem("my-test-system")
   implicit val mat: Materializer = ActorMaterializer()
-  implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
   def shutdown(): Unit = {
     println("shutting down")

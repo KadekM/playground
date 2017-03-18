@@ -15,6 +15,17 @@ val ammonite = Seq(
 
 ////////////////////
 
+lazy val playPlay = Project(id = "playground-play", base = file("modules/playground-play"))
+    .settings(
+      scalaVersion := "2.11.8",
+
+      libraryDependencies ++= Seq(
+        "org.webjars" %% "webjars-play" % "2.5.0",
+        "org.webjars" % "bootstrap"     % "4.0.0-alpha.6"
+      )
+    )
+	.enablePlugins(PlayScala)
+
 lazy val playShapeless = Project(id = "playground-shapeless", base = file("modules/playground-shapeless"))
   .settings(
     ammonite,
@@ -40,6 +51,7 @@ lazy val playFigaro = Project(id = "playground-figaro", base = file("modules/pla
   )
 
 
+val opRabbitVersion = "1.6.0"
 val akkaVersion = "2.4.16"
 lazy val playAkka = Project(id = "playground-akka", base = file("modules/playground-akka"))
   .settings(
@@ -67,7 +79,10 @@ lazy val playAkka = Project(id = "playground-akka", base = file("modules/playgro
       "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
       "com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaVersion,
       "com.typesafe.akka" %% "akka-typed-experimental" % akkaVersion,
-      "com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaVersion
-      ,"org.scalatest" %% "scalatest" % "3.0.1" % Test
+      "com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaVersion,
+      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+
+      "com.spingo" %% "op-rabbit-core" % opRabbitVersion,
+      "com.spingo" %% "op-rabbit-akka-stream" % opRabbitVersion
     )
   )
