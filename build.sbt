@@ -81,6 +81,8 @@ lazy val playAkka = Project(id = "playground-akka", base = file("modules/playgro
       "com.typesafe.akka" %% "akka-typed-experimental" % akkaVersion,
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaVersion,
       "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "com.github.romix.akka" %% "akka-kryo-serialization" % "0.5.0",
+      //"com.github.romix.akka" %% "akka-kryo-serialization" % "0.4.2",
 
       "com.spingo" %% "op-rabbit-core" % opRabbitVersion,
       "com.spingo" %% "op-rabbit-akka-stream" % opRabbitVersion
