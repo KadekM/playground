@@ -11,6 +11,7 @@ import com.spingo.op_rabbit.Message.ConfirmResponse
 import com.spingo.op_rabbit.stream.RabbitSource
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object RabbitMq extends App with ActorDeps {
 
@@ -18,16 +19,14 @@ object RabbitMq extends App with ActorDeps {
   val queueName = "some-queue"
   implicit val timeout: Timeout = 5.seconds
 
-/*  for (i <- 1 to 10) {
+  // queue into rabbitmq
+  for (i <- 1 to 100) {
     (rabbitControl ! Message.queue(s"$i", queue = queueName))
-    /*      .mapTo[ConfirmResponse]
-      .foreach(println)*/
-
     Thread.sleep(1)
-  }*/
-
+  }
   Thread.sleep(2000)
 
+  //read from rabbitmq
   val decider: Decider = {
     case e: Exception =>
       println("problem detected")
@@ -42,14 +41,14 @@ object RabbitMq extends App with ActorDeps {
     }
   }
 
-  def dieOn3(x: Int): Int = {
-    if (x % 3 == 0) { throw new Exception("oops") }
+  def die(x: Int): Int = {
+    if (x == 25) { throw new Exception("oops") }
     else { x }
   }
 
   import com.spingo.op_rabbit.Directives._
   RabbitSource(rabbitControl,
-               channel(qos = 3),
+               channel(qos = 50),
                consume(
                  queue(queueName,
                        durable = true,
@@ -57,8 +56,7 @@ object RabbitMq extends App with ActorDeps {
                        autoDelete = false)),
                body(as[String]))
     .map(x => x.toInt)
-      //.collect { case x if x%3==0 => x }
-    //.mapAsync(8) (x => Future { dieOn3(x) })
+    .mapAsync(8) (x => Future { Thread.sleep(500); die(x) })
     .withAttributes(ActorAttributes.supervisionStrategy(decider))
     .acked
     .runForeach { x =>
