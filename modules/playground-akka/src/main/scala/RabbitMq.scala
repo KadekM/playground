@@ -1,3 +1,5 @@
+import java.time.LocalDateTime
+
 import akka.actor.Props
 import com.spingo.op_rabbit._
 import akka.pattern._
@@ -36,13 +38,13 @@ object RabbitMq extends App with ActorDeps {
   implicit val recoveryStrategy: RecoveryStrategy = new RecoveryStrategy {
     override def apply(v1: String, v2: Channel, v3: Throwable) = (v1, v3) match {
       case (q, e) =>
-        println(s"error on $q - $e")
+        println(s"${LocalDateTime.now.toString} on $q - $e")
         Directives.nack(requeue = true)
     }
   }
 
   def die(x: Int): Int = {
-    if (x == 25) { throw new Exception("oops") }
+    if (x == 25) { Thread.sleep(1500);throw new Exception("oops") }
     else { x }
   }
 
@@ -56,11 +58,11 @@ object RabbitMq extends App with ActorDeps {
                        autoDelete = false)),
                body(as[String]))
     .map(x => x.toInt)
-    .mapAsync(8) (x => Future { Thread.sleep(500); die(x) })
+    .mapAsyncUnordered(8) (x => Future { die(x) })
     .withAttributes(ActorAttributes.supervisionStrategy(decider))
     .acked
     .runForeach { x =>
-      println(x)
+      println(s"${LocalDateTime.now.toString}  --> $x")
     }
 
   Thread.sleep(15000)
