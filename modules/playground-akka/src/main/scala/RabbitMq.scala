@@ -22,19 +22,20 @@ object RabbitMq extends App with ActorDeps {
   implicit val timeout: Timeout = 5.seconds
 
   // queue into rabbitmq
-  for (i <- 1 to 100) {
+/*  for (i <- 1 to 100) {
     (rabbitControl ! Message.queue(s"$i", queue = queueName))
     Thread.sleep(1)
   }
-  Thread.sleep(2000)
+  Thread.sleep(2000)*/
 
   //read from rabbitmq
   val decider: Decider = {
     case e: Exception =>
-      println("problem detected")
+      println(s"problem detected ${e.getMessage}")
       Supervision.Resume
   }
 
+/*
   implicit val recoveryStrategy: RecoveryStrategy = new RecoveryStrategy {
     override def apply(v1: String, v2: Channel, v3: Throwable) = (v1, v3) match {
       case (q, e) =>
@@ -42,15 +43,23 @@ object RabbitMq extends App with ActorDeps {
         Directives.nack(requeue = true)
     }
   }
+*/
+
+  implicit val recoveryStrategy: RecoveryStrategy = RecoveryStrategy.limitedRedeliver(
+    redeliverDelay = 7.seconds,
+    retryCount = 3,
+    onAbandon = RecoveryStrategy.abandonedQueue(
+      defaultTTL = 7.days)
+  )
 
   def die(x: Int): Int = {
-    if (x == 25) { Thread.sleep(1500);throw new Exception("oops") }
+    if (x == 25) { throw new Exception(s"Oops on $x") }
     else { x }
   }
 
   import com.spingo.op_rabbit.Directives._
   RabbitSource(rabbitControl,
-               channel(qos = 50),
+               channel(qos = 5),
                consume(
                  queue(queueName,
                        durable = true,
@@ -58,14 +67,14 @@ object RabbitMq extends App with ActorDeps {
                        autoDelete = false)),
                body(as[String]))
     .map(x => x.toInt)
-    .mapAsyncUnordered(8) (x => Future { die(x) })
+    .mapAsyncUnordered(3) (x => Future { Thread.sleep(500); die(x) })
     .withAttributes(ActorAttributes.supervisionStrategy(decider))
     .acked
     .runForeach { x =>
       println(s"${LocalDateTime.now.toString}  --> $x")
     }
 
-  Thread.sleep(15000)
+  Thread.sleep(25000)
 
   shutdown()
 }
