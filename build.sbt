@@ -1,7 +1,7 @@
 name := "playground"
 
 version := "1.0"
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
 resolvers in ThisBuild ++= Seq(
   Resolver.sonatypeRepo("releases"),
@@ -9,7 +9,7 @@ resolvers in ThisBuild ++= Seq(
 )
 
 val ammonite = Seq(
-  libraryDependencies += "com.lihaoyi" % "ammonite" % "0.8.1" % "test" cross CrossVersion.full,
+  libraryDependencies += "com.lihaoyi" % "ammonite" % "0.9.9" % "test" cross CrossVersion.full,
   initialCommands in (Test, console) := """ammonite.Main().run()"""
 )
 
@@ -30,7 +30,7 @@ lazy val playShapeless = Project(id = "playground-shapeless", base = file("modul
   .settings(
     ammonite,
 
-    scalaVersion := "2.12.0",
+    scalaVersion := "2.12.1",
     scalaOrganization := "org.typelevel",
 
     libraryDependencies ++= Seq(
@@ -46,7 +46,7 @@ lazy val playFigaro = Project(id = "playground-figaro", base = file("modules/pla
 
     libraryDependencies ++= Seq(
       "com.cra.figaro" %% "figaro" % "4.1.0.0" // publish local https://github.com/p2t2/figaro, latest branch
-      ,"org.scalatest" %% "scalatest" % "3.0.1" % Test
+      ,"org.scalatest" %% "scalatest" % "3.0.3" % Test
     )
   )
 
@@ -80,7 +80,7 @@ lazy val playAkka = Project(id = "playground-akka", base = file("modules/playgro
       "com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaVersion,
       "com.typesafe.akka" %% "akka-typed-experimental" % akkaVersion,
       "com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaVersion,
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
       "com.github.romix.akka" %% "akka-kryo-serialization" % "0.5.0",
       //"com.github.romix.akka" %% "akka-kryo-serialization" % "0.4.2",
 
