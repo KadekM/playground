@@ -38,6 +38,17 @@ lazy val playShapeless = Project(id = "playground-shapeless", base = file("modul
     )
   )
 
+lazy val playCats = Project(id = "playground-cats", base = file("modules/playground-cats"))
+  .settings(
+    ammonite,
+
+    scalaVersion := "2.12.2",
+
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats" % "0.9.0"
+    )
+  )
+
 lazy val playFigaro = Project(id = "playground-figaro", base = file("modules/playground-figaro"))
   .settings(
     ammonite,
