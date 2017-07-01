@@ -17,7 +17,7 @@ val ammonite = Seq(
 
 lazy val playPlay = Project(id = "playground-play", base = file("modules/playground-play"))
     .settings(
-      scalaVersion := "2.11.8",
+      scalaVersion := "2.11.11",
 
       libraryDependencies ++= Seq(
         "org.webjars" %% "webjars-play" % "2.5.0",
@@ -45,15 +45,16 @@ lazy val playCats = Project(id = "playground-cats", base = file("modules/playgro
     scalaVersion := "2.12.2",
 
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats" % "0.9.0"
-    )
+      "org.typelevel" %% "cats" % "0.9.0",
+      "org.typelevel" %% "dogs-core" % "0.5.2"
+)
   )
 
 lazy val playFigaro = Project(id = "playground-figaro", base = file("modules/playground-figaro"))
   .settings(
     ammonite,
 
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.11.11",
 
     libraryDependencies ++= Seq(
       "com.cra.figaro" %% "figaro" % "4.1.0.0" // publish local https://github.com/p2t2/figaro, latest branch
@@ -68,7 +69,7 @@ lazy val playAkka = Project(id = "playground-akka", base = file("modules/playgro
   .settings(
     ammonite,
 
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.11.11",
 
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,

@@ -11,6 +11,8 @@ object Coprod extends App {
 
   val x = Coproduct[ISB](D())
 
+  println(x.select[D])
+
   object run extends Poly1 {
     implicit def caseA = at[A](i => println("a"))
     implicit def caseB = at[B](i => println("b"))
