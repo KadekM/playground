@@ -33,6 +33,6 @@ object Yolo extends App {
   val finished = Future.sequence(fs)
   finished.foreach(x => println(x.mkString))
 
-  Await.result(finished, 60.seconds)
+  Await.result(finished, 15.minutes)
 
 }
